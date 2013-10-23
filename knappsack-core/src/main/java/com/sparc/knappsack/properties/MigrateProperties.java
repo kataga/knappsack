@@ -1,5 +1,6 @@
 package com.sparc.knappsack.properties;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
@@ -40,8 +41,36 @@ public class MigrateProperties {
         this.awsAccessKey = System.getProperty(KNAPPSACK_ACCESS_KEY);
         this.awsSecretKey = System.getProperty(KNAPPSACK_SECRET_KEY);
         if(this.awsAccessKey != null && this.awsSecretKey != null) {
+
+			String proxyHost;
+			proxyHost = System.getProperty("http.proxyHost");
+
+			String proxyPort;
+			proxyPort = System.getProperty("http.proxyPort");
+
+			String proxyUserName;
+			proxyUserName = System.getProperty("http.proxyUserName" );
+
+			String proxyPassword;
+			proxyPassword =	System.getProperty("http.proxyPassword" );
+
+			ClientConfiguration config = new ClientConfiguration();
+
+			if( proxyHost != null )
+				config.setProxyHost( proxyHost );
+
+			if( proxyPort != null )
+				config.setProxyPort( Integer.parseInt( proxyPort ) );
+
+			if( proxyUserName != null )
+				config.setProxyUsername( proxyUserName );
+
+			if( proxyPassword != null )
+				config.setProxyPassword( proxyPassword );
+
             AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-            amazonCloudFormationClient = new AmazonCloudFormationClient(awsCredentials);
+            amazonCloudFormationClient = new AmazonCloudFormationClient(awsCredentials,config);
+			
         }
     }
 

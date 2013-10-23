@@ -1,6 +1,7 @@
 package com.sparc.knappsack.components.services;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.sqs.AmazonSQSClient;
@@ -71,8 +72,35 @@ public class SQSEmailServiceWorker {
 
     @PostConstruct
     private void init() {
+
+		String proxyHost;
+		proxyHost = System.getProperty("http.proxyHost");
+
+		String proxyPort;
+		proxyPort = System.getProperty("http.proxyPort");
+
+		String proxyUserName;
+		proxyUserName = System.getProperty("http.proxyUserName" );
+
+		String proxyPassword;
+		proxyPassword =	System.getProperty("http.proxyPassword" );
+
+		ClientConfiguration config = new ClientConfiguration();
+
+		if( proxyHost != null )
+			config.setProxyHost( proxyHost );
+
+		if( proxyPort != null )
+			config.setProxyPort( Integer.parseInt( proxyPort ) );
+
+		if( proxyUserName != null )
+			config.setProxyUsername( proxyUserName );
+
+		if( proxyPassword != null )
+			config.setProxyPassword( proxyPassword );
+
         AWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-        this.sqsClient = new AmazonSQSClient(credentials);
+        this.sqsClient = new AmazonSQSClient(credentials,config);
 
         GetQueueUrlRequest request = new GetQueueUrlRequest(sqsQueueName);
         this.queueUrl = sqsClient.getQueueUrl(request).getQueueUrl();

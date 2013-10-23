@@ -2,6 +2,7 @@ package com.sparc.knappsack.components.services;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClient;
@@ -143,13 +144,41 @@ public abstract class AbstractKeyVaultService<T extends KeyVaultEntry> implement
     @PostConstruct
     private void postConstruct() {
         try {
-            sqsClient = new AmazonSQSClient(new BasicAWSCredentials(awsAccessKey, awsSecretKey));
+			String proxyHost;
+			proxyHost = System.getProperty("http.proxyHost");
+
+			String proxyPort;
+			proxyPort = System.getProperty("http.proxyPort");
+
+			String proxyUserName;
+			proxyUserName = System.getProperty("http.proxyUserName" );
+
+			String proxyPassword;
+			proxyPassword =	System.getProperty("http.proxyPassword" );
+
+			ClientConfiguration config = new ClientConfiguration();
+
+			if( proxyHost != null )
+				config.setProxyHost( proxyHost );
+
+			if( proxyPort != null )
+				config.setProxyPort( Integer.parseInt( proxyPort ) );
+
+			if( proxyUserName != null )
+				config.setProxyUsername( proxyUserName );
+
+			if( proxyPassword != null )
+				config.setProxyPassword( proxyPassword );
+
+            sqsClient = new AmazonSQSClient(new BasicAWSCredentials(awsAccessKey, awsSecretKey), config);
 
             GetQueueUrlRequest request = new GetQueueUrlRequest(sqsResignQueue);
             this.resignQueueUrl = sqsClient.getQueueUrl(request).getQueueUrl();
         } catch (AmazonServiceException ex) {
             log.error(String.format("Error constructing AbstractKeyVaultService.", ex));
-        }
+        } catch (AmazonClientException ex ) {
+			log.error(String.format("AmazonClientException.", ex));
+		}
     }
 
 }
